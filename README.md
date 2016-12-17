@@ -1,22 +1,43 @@
 rsa - The RSA Encryption Algorithm in Common Lisp
 -------------------------------------------------
 
-Get a lisp: http://sbcl.org
+Encrypt and decrypt messages using a key and the beauty of mathematics.
 
-Run your lisp: ./sbcl
+--
 
-Load this file: (load "rsa.lisp")
+First, get a Common Lisp implementation and install it:
 
-Generate a key: (setq *key* (rsa-gen-key "me"))
+    http://sbcl.org
 
-Encrypt: (setq *cyphertext* (rsa-encrypt-text *key* "this is a test"))
+Run your lisp:
 
-Decrypt: (setq *plaintext* (rsa-decrypt-text *key* *cyphertext*))
+    $ ./sbcl
+
+Load this file:
+
+    (load "rsa.lisp")
+
+Generate a key:
+
+    (setq *key* (rsa-gen-key "me"))
+
+Encrypt:
+
+    (setq *cyphertext* (rsa-encrypt-text *key* "this is a test"))
+
+Decrypt:
+
+    (setq *plaintext* (rsa-decrypt-text *key* *cyphertext*))
 
 There is also a basic key management db.
 
-List keys: (rsa-list-keys)
-Find a key by name: (rsa-find-key name)
+List keys:
+
+    (rsa-list-keys)
+
+Find a key by name:
+
+    (rsa-find-key name)
 
 Bonus
 -----
@@ -28,4 +49,3 @@ Rabkin primality test.
 Burton Samograd
 burton.samograd@gmail.com
 2016
-
