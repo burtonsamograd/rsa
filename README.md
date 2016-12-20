@@ -41,6 +41,14 @@ Find a key by name:
 
     (rsa-find-key name)
 
+Load a key into the db:
+
+    (rsa-load-key "me.rsa")
+
+Save a key to a file:
+
+    (rsa-save-key *key* "me.rsa")
+
 Bonus
 -----
 
