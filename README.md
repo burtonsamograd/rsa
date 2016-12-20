@@ -41,7 +41,8 @@ Decrypt:
 (defparameter *plaintext* (rsa-decrypt-text *key* *cyphertext*))
 ```
 
-There is also a basic key management db.
+Key management DB
+-----------------
 
 List keys:
 
