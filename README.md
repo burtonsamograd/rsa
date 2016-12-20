@@ -13,41 +13,59 @@ First, get a Common Lisp implementation and install it:
 
 Run your lisp:
 
+```sh
     $ ./sbcl
+```
 
 Load this file:
 
-    (load "rsa.lisp")
+```cl
+(load "rsa.lisp")
+```
 
 Generate a key:
 
-    (defparameter *key* (rsa-gen-key "me"))
+```cl
+(defparameter *key* (rsa-gen-key "me"))
+```
 
 Encrypt:
 
-    (defparameter *cyphertext* (rsa-encrypt-text *key* "this is a test"))
+```cl
+(defparameter *cyphertext* (rsa-encrypt-text *key* "this is a test"))
+```
 
 Decrypt:
 
-    (defparameter *plaintext* (rsa-decrypt-text *key* *cyphertext*))
+```cl
+(defparameter *plaintext* (rsa-decrypt-text *key* *cyphertext*))
+```
 
 There is also a basic key management db.
 
 List keys:
 
-    (rsa-list-keys)
+```cl
+(rsa-list-keys)
+```
 
 Find a key by name:
 
-    (rsa-find-key name)
+```cl
+(rsa-find-key name)
+```
 
 Load a key into the db:
 
-    (rsa-load-key "me.rsa")
+```cl
+(rsa-load-key "me.rsa")
+```
 
 Save a key to a file:
 
-    (rsa-save-key *key* "me.rsa")
+```cl
+(rsa-save-key *key* "me.rsa")
+```
 
 Bonus
 -----
