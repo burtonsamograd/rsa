@@ -76,8 +76,9 @@ Rabkin primality test.
 TODO
 ----
 
--- save encrypted message to a file
--- load and decrypt a message from a file
+- save encrypted message to a file
+
+- load and decrypt a message from a file
 
 --
 Burton Samograd
