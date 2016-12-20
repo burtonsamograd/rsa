@@ -76,10 +76,8 @@ Rabkin primality test.
 TODO
 ----
 
--- load and save keys
-
-    (rsa-save-key "filename")
-    (rsa-load-key "filename")
+-- save encrypted message to a file
+-- load and decrypt a message from a file
 
 --
 Burton Samograd
