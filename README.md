@@ -21,15 +21,15 @@ Load this file:
 
 Generate a key:
 
-    (setq *key* (rsa-gen-key "me"))
+    (defparameter *key* (rsa-gen-key "me"))
 
 Encrypt:
 
-    (setq *cyphertext* (rsa-encrypt-text *key* "this is a test"))
+    (defparameter *cyphertext* (rsa-encrypt-text *key* "this is a test"))
 
 Decrypt:
 
-    (setq *plaintext* (rsa-decrypt-text *key* *cyphertext*))
+    (defparameter *plaintext* (rsa-decrypt-text *key* *cyphertext*))
 
 There is also a basic key management db.
 
