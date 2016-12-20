@@ -3,7 +3,7 @@
 ;;
 
 
-(asdf:oos 'asdf:load-op 'ironclad)
+(asdf:oos 'asdf:load-op 'ironclad) ;; used for sha256
 (asdf:oos 'asdf:load-op 'cl-base64)
 
 (defconstant +E+ 17)
