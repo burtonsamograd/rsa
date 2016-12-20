@@ -53,7 +53,7 @@ List keys:
 Find a key by name:
 
 ```cl
-(rsa-find-key name)
+(rsa-find-key "me")
 ```
 
 Load a key into the db:
@@ -76,6 +76,8 @@ Rabkin primality test.
 
 TODO
 ----
+
+- save/load key db to/from file
 
 - save encrypted message to a file
 
