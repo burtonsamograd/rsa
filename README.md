@@ -3,6 +3,8 @@ rsa - The RSA Encryption Algorithm in Common Lisp
 
 Encrypt and decrypt messages using a key and the beauty of mathematics.
 
+This library does not solve the key exchange problem.
+
 --
 
 First, get a Common Lisp implementation and install it:
@@ -44,6 +46,14 @@ Bonus
 
 You will also find a fast, self contained impmentation of the Miller
 Rabkin primality test.
+
+TODO
+----
+
+-- load and save keys
+
+    (rsa-save-key "filename")
+    (rsa-load-key "filename")
 
 --
 Burton Samograd
