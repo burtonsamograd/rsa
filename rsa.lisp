@@ -163,6 +163,15 @@ if no inverse exists."
       (setf (gethash base64-name *rsa-key-db*)
 	    (make-rsa-key :name name :name-base64 base64-name :length length :n n :e +E+ :d d))))
 
+(defun rsa-save-key (key filename)
+  (with-open-file (s filename :direction :output)
+		  (format s "~S" key)))
+
+(defun rsa-load-key (filename)
+  (with-open-file (s filename)
+		  (let ((key (read s)))
+		    (setf (gethash (rsa-key-name-base64 key) *rsa-key-db*) key))))
+
 (defun rsa-list-keys ()
   (maphash (lambda (key value)
 	     (declare (ignore key))
