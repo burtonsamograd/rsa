@@ -38,7 +38,8 @@ Encrypt:
 Decrypt:
 
 ```cl
-(defparameter *plaintext* (rsa-decrypt-text *key* *cyphertext*))
+(multiple-value-bind (from plantext)(rsa-decrypt-text *key* *cyphertext*) 
+    plaintexte)
 ```
 
 Key management DB
