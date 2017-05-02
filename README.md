@@ -38,8 +38,20 @@ Encrypt:
 Decrypt:
 
 ```cl
-(multiple-value-bind (from plantext)(rsa-decrypt-text *key* *cyphertext*) 
-    plaintexte)
+(multiple-value-bind (from plaintext)(rsa-decrypt-text *key* *cyphertext*) 
+    plaintext)
+```
+
+Encrypt text and store into file
+```cl
+(rsa-encrypt-and-save *key* "Very secret message" "message.enc")
+
+```
+
+Decrypt text stored in file
+```cl
+(rsa-load-and-decrypt *key* "message.enc")
+
 ```
 
 Key management DB
@@ -69,6 +81,15 @@ Save a key to a file:
 (rsa-save-key *key* "me.rsa")
 ```
 
+Save key database
+```cl
+(rsa-save-db "db.rsa")
+```
+
+Load key database (please note that function does not clear the internal database before loading, so you are merging keys from file passed to internal DB)
+```cl
+(rsa-load-db "rsa.db")
+```
 Bonus
 -----
 
@@ -78,13 +99,16 @@ Rabkin primality test.
 TODO
 ----
 
-- save/load key db to/from file
+- [X] save/load key db to/from file
 
-- save encrypted message to a file
+- [X] save encrypted message to a file 
 
-- load and decrypt a message from a file
+- [X] load and decrypt a message from a file 
 
 --
 Burton Samograd
 burton.samograd@gmail.com
 2016
+
+Laci Kosco
+laci.kosco@gmail.com, 2017 (implementation of TODO)

@@ -1,10 +1,43 @@
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER; Base: 10 -*-
+
+;;; Copyright (c) 2016-2017  All rights reserved.
+;;; Burton Samograd burton.samograd@gmail.com 2016
+;;; Ladislav Kosco laci.kosco@gmail.com 2017 
+
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions
+;;; are met:
+
+;;;   * Redistributions of source code must retain the above copyright
+;;;     notice, this list of conditions and the following disclaimer.
+
+;;;   * Redistributions in binary form must reproduce the above
+;;;     copyright notice, this list of conditions and the following
+;;;     disclaimer in the documentation and/or other materials
+;;;     provided with the distribution.
+
+;;; THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
+;;; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+;;; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+;;; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+;;; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+;;; GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+;;; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 ;;
 ;; rsa.lisp - THe RSA Encryption Algorithm in Common Lisp
 ;;
-
-
-(asdf:oos 'asdf:load-op 'ironclad) ;; used for sha256
-(asdf:oos 'asdf:load-op 'cl-base64)
+(let ((*standard-output* (make-broadcast-stream)))
+#+quicklisp (ql:quickload '(:cl-base64 :ironclad :flexi-streams))
+;if not quicklisp, use asdf
+#-quicklisp (asdf:oos 'asdf:load-op 'ironclad) ;; used for sha256
+#-quicklisp (asdf:oos 'asdf:load-op 'cl-base64)
+#-quicklisp (asdf:oos 'asdf:load-op 'flexi-streams)
+)
 
 (defconstant +E+ 17)
 
@@ -12,7 +45,8 @@
   "As (mod (expt n exponent) modulus), but more efficient. From Cliki"
   (declare (optimize (speed 3) (safety 0) (space 0) (debug 0))
 	   (integer n exponent modulus)
-	   (sb-ext:muffle-conditions sb-ext:compiler-note)) ; too many optimization notes here
+	   #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note) ; too many optimization notes here
+	   ) 
   (loop with result = 1
      for i of-type fixnum from 0 below (integer-length exponent)
      for sqr = n then (mod (* sqr sqr) modulus)
@@ -164,15 +198,18 @@ if no inverse exists."
 	    (make-rsa-key :name name :name-base64 base64-name :length length :n n :e +E+ :d d))))
 
 (defun rsa-save-key (key filename)
+	"save rsa key struct to file"
   (with-open-file (s filename :direction :output)
 		  (format s "~S" key)))
 
 (defun rsa-load-key (filename)
+	"load rsa key from file and store it into key internal database"
   (with-open-file (s filename)
 		  (let ((key (read s)))
 		    (setf (gethash (rsa-key-name-base64 key) *rsa-key-db*) key))))
 
 (defun rsa-list-keys ()
+	"List all stored rsa keys from internal database"
   (maphash (lambda (key value)
 	     (declare (ignore key))
 	     (format t
@@ -183,6 +220,7 @@ if no inverse exists."
 	   *rsa-key-db*))
 
 (defun rsa-find-key (name)
+	"find key by name in internal database"
   (maphash (lambda (key value)
 	     (declare (ignore key))
 	     (when (string= name (rsa-key-name value))
@@ -192,6 +230,7 @@ if no inverse exists."
 (defconstant rsa-num-random-padding-bytes 16)
 
 (defun rsa-encrypt-text (rsa-key msg)
+	"encrypt text message with given rsa key"
   (when (> (+ (length msg) 2)
 	   (/ (rsa-key-length rsa-key) 8))
       (error "rsa-encrypt-text: message to is too long to encrypt with given key length"))
@@ -204,7 +243,7 @@ if no inverse exists."
 			 (coerce x '(simple-array (unsigned-byte 8) (*)))))
 	 (msg-octets (concatenate '(simple-array (unsigned-byte 8) (*))
 				  random-bytes
-				  (string-to-octets
+				  (flexi-streams:string-to-octets
 				   (concatenate 'string
 						"( \""
 						(rsa-key-name-base64 rsa-key)
@@ -224,10 +263,11 @@ if no inverse exists."
 		 sig)))
 	
 (defun rsa-decrypt-text (rsa-key msg+sig)
+	"decrypt rsa-encrypted message using rsa key"
   (let* ((n (rsa-key-n rsa-key))
 	 (d (rsa-key-d rsa-key))
 	 (msg-len (octets-to-integer (subseq msg+sig 0 2)))
-	 (msg-sexp (octets-to-string
+	 (msg-sexp (flexi-streams:octets-to-string
 		    (subseq (integer-to-octets
 			     (expt-mod (octets-to-integer (subseq msg+sig 2 (+ 2 msg-len))) d n))
 			    rsa-num-random-padding-bytes)))
@@ -239,5 +279,54 @@ if no inverse exists."
     (declare (ignore sig))
     (values msg-from msg-text)))
     
+;read file at one shot
+(defun file-at-once (filespec &rest open-args)
+	"file reading function into string at once"
+	(with-open-stream (stream (apply #'open filespec open-args))
+	(let* ((buffer
+		(make-array (file-length stream)
+			:element-type
+			(stream-element-type stream)
+			:fill-pointer t))
+		(position (read-sequence buffer stream)))
+	(setf (fill-pointer buffer) position)
+	buffer)))
 
-    
+;convert encrypted vector to base64 string
+(defun vector-to-base64(vec)
+	(cl-base64:string-to-base64-string (flexi-streams:octets-to-string vec)))
+
+;convert base64 string to encrypted vector
+(defun base64-to-vector(base64string)
+	(flexi-streams:string-to-octets (cl-base64:BASE64-STRING-TO-STRING base64string)))
+
+;encrypt-and-save functionality
+(defun rsa-encrypt-and-save (rsa-key msg filespec &rest open-args)
+	"encrypt msg by rsa key and save to file, you can provide additional parameters to open call"
+	(let ((cyphertext (rsa-encrypt-text rsa-key msg)))
+		(with-open-stream (stream (apply #'open filespec :direction :output open-args) )
+			(princ (vector-to-base64 cyphertext) stream))))
+
+;load-and-decrypt functionality
+(defun rsa-load-and-decrypt (rsa-key filename )
+	"load and decrypt message from file using rsa key"
+	;load encrypted msg
+	;decrypt msg by rsa key 
+	(let ((msg+sig (base64-to-vector (file-at-once filename))))
+		 (rsa-decrypt-text rsa-key msg+sig)))
+
+(defun rsa-save-db (filespec &rest open-args)
+	"save internal rsa key database to file"
+	(declare (special *rsa-key-db*))
+	(with-open-stream (stream (apply #'open filespec :direction :output open-args))
+		(maphash #'(lambda(key value)(declare (ignore key))(format stream "~S" value)) *rsa-key-db*)))
+
+(defun rsa-load-db (filespec &rest open-args)
+	"loads keys form file to internal database, does not clear internal db
+so you can issue function multiple times to populate db from multiple files
+rsa keys with the same name will be overwritten in internal db with latest occurence"
+	(declare (special *rsa-key-db*))
+	(with-open-stream (stream (apply #'open filespec :direction :input :if-does-not-exist :error open-args))
+		(loop for key = (read stream nil)
+			while key do (setf (gethash (rsa-key-name-base64 key) *rsa-key-db*) key))))
+
