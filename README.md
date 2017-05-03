@@ -84,6 +84,10 @@ TODO
 
 - load and decrypt a message from a file
 
+- make ASDF installable
+
+- get into quicklisp
+
 --
 Burton Samograd
 burton.samograd@gmail.com
